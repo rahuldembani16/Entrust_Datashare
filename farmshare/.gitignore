@@ -9,7 +9,7 @@ node_modules/
 .env.*.local
 
 # Build output
-frontend/dist/
+
 frontend/build/
 
 # Vite cache
