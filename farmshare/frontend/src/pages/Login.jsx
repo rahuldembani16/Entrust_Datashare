@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sprout } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const demos = [
@@ -31,7 +30,13 @@ export default function Login() {
 
   return (
     <main className="auth-page">
-      <section className="auth-hero"><Sprout size={44} /><h1>Share farm data on your terms.</h1><p>Get regional benchmarks, stronger services, and transparent governance without exposing individual records.</p></section>
+      <section className="auth-hero">
+        <div className="logo-badge">
+          <img src="/entrust-logo.png" alt="ENTRUST - Marie Skłodowska-Curie Doctoral Network" />
+        </div>
+        <h1>Share farm data on your terms.</h1>
+        <p>Get regional benchmarks, stronger services, and transparent governance without exposing individual records.</p>
+      </section>
       <form className="auth-card" onSubmit={submit}>
         <h2>Login</h2>
         {error && <p className="error">{error}</p>}
