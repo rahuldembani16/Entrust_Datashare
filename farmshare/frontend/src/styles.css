@@ -111,6 +111,12 @@ th { color: var(--soil); text-transform: capitalize; }
 .delete-record-info strong { color: var(--text); }
 .delete-record-info span { color: var(--muted); font-size: 14px; }
 .delete-record-info small { color: var(--muted); font-size: 12px; }
+.name-display { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: background 0.2s; }
+.name-display:hover { background: rgba(74,124,89,0.1); }
+.name-display .edit-icon { opacity: 0.4; transition: opacity 0.2s; }
+.name-display:hover .edit-icon { opacity: 1; }
+.name-edit-row { display: flex; align-items: center; gap: 6px; }
+.name-edit-input { padding: 6px 10px; border-radius: 10px; border: 2px solid var(--primary); width: 180px; font-size: 14px; }
 
 @media (max-width: 980px) {
   .app-shell { grid-template-columns: 1fr; }

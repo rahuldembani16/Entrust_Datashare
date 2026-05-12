@@ -45,4 +45,17 @@ router.get('/me', requireAuth, async (req, res) => {
   return res.json({ user: publicUser(user) });
 });
 
+router.put('/profile', requireAuth, async (req, res) => {
+  const { name } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ message: 'Name is required' });
+  }
+
+  await db('users').where({ id: req.user.id }).update({ name: name.trim() });
+  const user = await db('users').where({ id: req.user.id }).first();
+  await db('audit_log').insert({ user_id: req.user.id, action: 'update_profile', target_table: 'users', target_id: req.user.id });
+  return res.json({ user: publicUser(user) });
+});
+
 export default router;

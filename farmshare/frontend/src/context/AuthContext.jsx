@@ -48,7 +48,11 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  return <AuthContext.Provider value={{ API_URL, token, user, login, register, logout }}>{children}</AuthContext.Provider>;
+  function updateUser(updatedUser) {
+    setUser(updatedUser);
+  }
+
+  return <AuthContext.Provider value={{ API_URL, token, user, login, register, logout, updateUser }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
