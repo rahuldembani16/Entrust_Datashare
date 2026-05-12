@@ -3,4 +3,10 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    allowedHosts: ['richness-serpent-reversing.ngrok-free.dev', 'all'],
+    proxy: {
+      '/api': 'http://localhost:4000',
+    },
+  },
 });

@@ -18,8 +18,31 @@ router.get('/records', async (req, res) => {
   return res.json(records);
 });
 
+router.get('/records/shared', async (req, res) => {
+  const records = await db('farm_records')
+    .join('crops', 'farm_records.crop_id', 'crops.id')
+    .join('regions', 'farm_records.region_id', 'regions.id')
+    .where('farm_records.farmer_id', req.user.id)
+    .select('farm_records.*', 'crops.name as crop_name', 'regions.name as region_name')
+    .orderBy('farm_records.created_at', 'desc');
+
+  const recordIds = records.map((r) => r.id);
+  const sharingRows = recordIds.length
+    ? await db('record_sharing').whereIn('record_id', recordIds)
+    : [];
+
+  const result = records.map((record) => ({
+    ...record,
+    shared_with: sharingRows
+      .filter((s) => s.record_id === record.id)
+      .map((s) => s.stakeholder_type)
+  }));
+
+  return res.json(result);
+});
+
 router.post('/records', async (req, res) => {
-  const { crop_id, region_id, season, yield_kg_ha, input_cost, water_use, notes, motivation } = req.body;
+  const { crop_id, region_id, season, yield_kg_ha, input_cost, water_use, notes, motivation, sharing } = req.body;
 
   if (!crop_id || !region_id || !season || !yield_kg_ha || !input_cost || !water_use) {
     return res.status(400).json({ message: 'Crop, region, season, yield, cost, and water use are required' });
@@ -40,13 +63,21 @@ router.post('/records', async (req, res) => {
     await db('data_upload_motivations').insert({ farmer_id: req.user.id, record_id: id, motivation });
   }
 
-  if (motivation === 'research') {
-    const existing = await db('sharing_permissions').where({ farmer_id: req.user.id, stakeholder_type: 'researcher' }).first();
-    const values = { is_active: true, agreed_at: new Date().toISOString() };
-    if (existing) {
-      await db('sharing_permissions').where({ id: existing.id }).update(values);
-    } else {
-      await db('sharing_permissions').insert({ farmer_id: req.user.id, stakeholder_type: 'researcher', ...values });
+  // Save per-record sharing selections and update global sharing permissions
+  const validTypes = ['farmer_org', 'researcher', 'service_provider', 'government'];
+  if (sharing && typeof sharing === 'object') {
+    for (const type of validTypes) {
+      if (type in sharing && Boolean(sharing[type])) {
+        await db('record_sharing').insert({ record_id: id, farmer_id: req.user.id, stakeholder_type: type });
+        // Also enable global sharing permission for this type
+        const existing = await db('sharing_permissions').where({ farmer_id: req.user.id, stakeholder_type: type }).first();
+        const values = { is_active: true, agreed_at: new Date().toISOString() };
+        if (existing) {
+          await db('sharing_permissions').where({ id: existing.id }).update(values);
+        } else {
+          await db('sharing_permissions').insert({ farmer_id: req.user.id, stakeholder_type: type, ...values });
+        }
+      }
     }
   }
 
